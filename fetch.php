@@ -172,7 +172,7 @@ foreach ( $xml->channel->item as $item ) {
 
 function curl_to_file( $url, $path ) {
 	// Use a temporary file so we aren't left with partial files if the download doesn't complete.
-	$temp_file_path = tempnam( sys_get_temp_dir(), "dough-" );
+	$temp_file_path = tempnam( sys_get_temp_dir(), "dropseeker-" );
 
 	$fp = fopen( $temp_file_path, 'w+' );
 
