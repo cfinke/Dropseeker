@@ -4,7 +4,7 @@ error_reporting( E_ALL );
 
 set_time_limit( 0 );
 
-$options = getopt( "", array( "search:", "podcast:", "before:", "after:", "output:", "match:", "extract", 'exclude:', ) );
+$options = getopt( "", array( "search:", "podcast:", "before:", "after:", "output:", "match:", "extract", 'exclude:', 'prefix_words:', 'suffix_words:', ) );
 
 if ( ! isset( $options['search'] ) ) {
 	$options['search'] = array();
@@ -35,6 +35,14 @@ if ( empty( $options['output'] ) ) {
 	$options['output'] = 'search-results/';
 }
 
+if ( ! isset( $options['prefix_words'] ) ) {
+	$options['prefix_words'] = 5;
+}
+
+if ( ! isset( $options['suffix_words'] ) ) {
+	$options['suffix_words'] = 5;
+}
+
 if ( empty( $options['search'] ) ) {
 	usage();
 
@@ -61,9 +69,6 @@ if ( ! file_exists( $options['output'] ) ) {
 }
 
 $transcripts = glob( "transcripts/*" . $options['podcast'] . "*/" . "*" . $options['match'] . "*.vtt" );
-
-$prefix_word_count = 10;
-$min_suffix_word_count = 10;
 
 $last_start_time = '0:00.000';
 $last_end_time = '0:00.000';
@@ -102,7 +107,7 @@ foreach ( $transcripts as $transcript_file ) {
 
 	foreach ( $options['search'] as $search_term ) {
 		$search_term = strtolower( $search_term );
-		$suffix_word_count = max( $min_suffix_word_count, substr_count( $search_term, ' ' ) );
+		$suffix_word_count = $options['suffix_words'] + substr_count( $search_term, ' ' );
 
 		$keywords = explode( " ", $search_term );
 
@@ -127,7 +132,7 @@ foreach ( $transcripts as $transcript_file ) {
 
 			array_shift( $suffix_words );
 
-			if ( count( $prefix_words ) > $prefix_word_count ) {
+			if ( count( $prefix_words ) > $options['prefix_words'] + 1) {
 				array_shift( $prefix_words );
 			}
 
@@ -150,6 +155,7 @@ foreach ( $transcripts as $transcript_file ) {
 				}
 
 				$suffix_string = '';
+
 				foreach ( $suffix_words as $suffix_word ) { $suffix_string .= $suffix_word[0] . ' '; }
 
 				$exclusion_search_string = join( " ", $prefix_words ) . " " . trim( $suffix_string );
@@ -257,4 +263,6 @@ function usage() {
 	echo "\t--output   The output directory for extracted clips. Defaults to `./search-results/`\n\n";
 	echo "\t--before   How many seconds before the matched search term that will be included in extracted clips.\n\n";
 	echo "\t--after    How many seconds after the matched search term will be included in extracted clips.\n\n";
+	echo "\t--prefix_words How many words to display before the matched term in the output.\n\n";
+	echo "\t--suffix_words How many words to display after the matched term in the output.\n\n";
 }
