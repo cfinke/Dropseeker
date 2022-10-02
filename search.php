@@ -227,24 +227,30 @@ function seconds_to_minutes( $seconds ) {
 }
 
 function matches_search_term( $word, $search_term ) {
-	if ( '*' === $search_term ) {
-		return true;
-	}
-
 	if ( $word === $search_term ) {
 		return true;
 	}
 
-	if ( strpos( $search_term, '*' ) === 0 ) {
-		$new_term = substr( $search_term, 1 );
-		if ( substr( $word, strlen( $word ) - strlen( $new_term ) ) === $new_term ) {
-			return true;
-		}
+	if ( '*' === $search_term ) {
+		return true;
 	}
-	else if ( strpos( $search_term, '*' ) === strlen( $search_term ) - 1 ) {
-		$new_term = substr( $search_term, 0, -1 );
 
-		if ( strpos( $word, $new_term ) === 0 ) {
+	if ( strpos( $search_term, '*' ) !== false ) {
+		$last_match_end = 0;
+		$parts = explode( "*", $search_term );
+
+		foreach ( $parts as $part ) {
+			$match_location = strpos( $word, $part, $last_match_end );
+
+			if ( $match_location === false ) {
+				return false;
+			}
+			else {
+				$last_match_end = $match_location + strlen( $part );
+			}
+		}
+
+		if ( $last_match_end == strlen( $word ) || $part === '' ) {
 			return true;
 		}
 	}
