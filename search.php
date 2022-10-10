@@ -4,7 +4,7 @@ error_reporting( E_ALL );
 
 set_time_limit( 0 );
 
-$options = getopt( "", array( "search:", "podcast:", "before:", "after:", "output:", "match:", "extract", 'exclude:', 'prefix_words:', 'suffix_words:', ) );
+$options = getopt( "", array( "search:", "podcast:", "before:", "after:", "output_dir:", "match:", "extract", 'exclude:', 'prefix_words:', 'suffix_words:', ) );
 
 if ( ! isset( $options['search'] ) ) {
 	$options['search'] = array();
@@ -31,8 +31,8 @@ if ( ! isset( $options['after'] ) ) {
 	$options['after'] = .1;
 }
 
-if ( empty( $options['output'] ) ) {
-	$options['output'] = 'search-results/';
+if ( empty( $options['output_dir'] ) ) {
+	$options['output_dir'] = 'search-results/';
 }
 
 if ( ! isset( $options['prefix_words'] ) ) {
@@ -55,23 +55,23 @@ if ( empty( $options['search'] ) ) {
 	die( "You must supply at least one search term.\n" );
 }
 
-foreach ( array( "before", "after", "output", "file" ) as $arg ) {
+foreach ( array( "before", "after", "output_dir", "file" ) as $arg ) {
 	if ( isset( $options[ $arg ] ) && is_array( $options[ $arg ] ) ) {
 		$options[ $arg ] = array_pop( $options[ $arg ] );
 	}
 }
 
-$options['output'] = trim( $options['output'] );
-$options['output'] = preg_replace( '/^~/', $_SERVER['HOME'], $options['output'] );
+$options['output_dir'] = trim( $options['output_dir'] );
+$options['output_dir'] = preg_replace( '/^~/', $_SERVER['HOME'], $options['output_dir'] );
 
-$options['output'] = rtrim( $options['output'], '/' ) . '/';
+$options['output_dir'] = rtrim( $options['output_dir'], '/' ) . '/';
 
-if ( ! file_exists( $options['output'] ) ) {
-	mkdir( $options['output'] );
+if ( ! file_exists( $options['output_dir'] ) ) {
+	mkdir( $options['output_dir'] );
 }
 
-if ( ! file_exists( $options['output'] ) ) {
-	die( "Could not create directory: " . $options['output'] . "\n" );
+if ( ! file_exists( $options['output_dir'] ) ) {
+	die( "Could not create directory: " . $options['output_dir'] . "\n" );
 }
 
 $transcripts = glob( "transcripts/*" . $options['podcast'] . "*/" . "*" . $options['match'] . "*.vtt" );
@@ -212,7 +212,7 @@ foreach ( $transcripts as $transcript_file ) {
 							. " -i " . escapeshellarg( $mp3_file )
 							. " "
 							. escapeshellarg(
-								rtrim( $options['output'], '/' )
+								rtrim( $options['output_dir'], '/' )
 								. '/' . $search_term
 								. " - " . basename( $mp3_file )
 								. " - " . $word_entry[2] . ".aif"
@@ -276,7 +276,7 @@ function usage() {
 	echo "\t--match    A search string for filtering which episodes are searched.\n\n";
 	echo "\t--exclude  A search string that, if it matches text around the search result, will be excluded from the final results.\n\n";
 	echo "\t--extract  Whether to extract audio clips of each search result. Requires ffmpeg.\n\n";
-	echo "\t--output   The output directory for extracted clips. Defaults to `./search-results/`\n\n";
+	echo "\t--output_dir   The output directory for extracted clips. Defaults to `./search-results/`\n\n";
 	echo "\t--before   How many seconds before the matched search term that will be included in extracted clips.\n\n";
 	echo "\t--after    How many seconds after the matched search term will be included in extracted clips.\n\n";
 	echo "\t--prefix_words How many words to display before the matched term in the output.\n\n";
