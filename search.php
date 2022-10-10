@@ -40,7 +40,13 @@ if ( ! isset( $options['prefix_words'] ) ) {
 }
 
 if ( ! isset( $options['suffix_words'] ) ) {
-	$options['suffix_words'] = 5;
+	$options['suffix_words'] = 15;
+}
+
+if ( isset( $options['exclude'] ) ) {
+	if ( ! is_array( $options['exclude'] ) ) {
+		$options['exclude'] = array( $options['exclude'] );
+	}
 }
 
 if ( empty( $options['search'] ) ) {
@@ -160,8 +166,12 @@ foreach ( $transcripts as $transcript_file ) {
 
 				$exclusion_search_string = join( " ", $prefix_words ) . " " . trim( $suffix_string );
 
-				if ( ! empty( $options['exclude'] ) && false !== stripos( $exclusion_search_string, $options['exclude'] ) ) {
-					continue;
+				if ( ! empty( $options['exclude'] ) ) {
+					foreach ( $options['exclude'] as $exclude_option ) {
+						if ( false !== stripos( $exclusion_search_string, $exclude_option ) ) {
+							continue 2;
+						}
+					}
 				}
 
 				echo $transcript_file . " @ " . $start . " - " . $end . ":\n\t" . $exclusion_search_string . "\n";
