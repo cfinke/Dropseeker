@@ -52,7 +52,7 @@ if ( isset( $options['exclude'] ) ) {
 if ( empty( $options['search'] ) ) {
 	usage();
 
-	die( "You must supply at least one search term.\n" );
+	die( "You must supply at least one search term.\n\n" );
 }
 
 foreach ( array( "before", "after", "output_dir", "file" ) as $arg ) {
@@ -249,13 +249,14 @@ function matches_search_term( $word, $search_term ) {
 		$last_match_end = 0;
 		$parts = explode( "*", $search_term );
 
-		foreach ( $parts as $part ) {
+		foreach ( $parts as $idx => $part ) {
 			$match_location = strpos( $word, $part, $last_match_end );
 
 			if ( $match_location === false ) {
 				return false;
-			}
-			else {
+			} else if ( $idx === 0 && $match_location > 0 ) {
+				return false;
+			} else {
 				$last_match_end = $match_location + strlen( $part );
 			}
 		}
@@ -267,6 +268,7 @@ function matches_search_term( $word, $search_term ) {
 
 	return false;
 }
+
 
 function usage() {
 	echo "Usage: php " . $_SERVER['PHP_SELF'] . " --search [search term]\n";
