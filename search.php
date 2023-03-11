@@ -286,11 +286,17 @@ function seconds_to_minutes( $seconds ) {
 }
 
 function matches_search_term( $word, $search_term ) {
+	$search_term = preg_replace( '/[^a-z0-9\*]/', '', strtolower( $search_term ) );
+
 	if ( $word === $search_term ) {
 		return true;
 	}
 
 	if ( '*' === $search_term ) {
+		return true;
+	}
+
+	if ( '.' === $search_term && strlen( $word ) == 1 ) {
 		return true;
 	}
 
