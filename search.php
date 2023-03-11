@@ -25,6 +25,7 @@ $options = getopt( "", array(
 	'limit_per_episode:',
 	'limit:',
 	'episode_dir:',
+	'transcript_dir:',
 ) );
 
 $options = array_merge( $default_options, $options );
@@ -76,6 +77,8 @@ if ( isset( $options['episode_dir'] ) ) {
 	$episode_dir = $default_episode_dir;
 }
 
+$episode_dir = rtrim( $episode_dir, '/' ) . '/';
+
 if ( isset( $options['transcript_dir'] ) ) {
 	$transcript_dir = $options['transcript_dir'];
 
@@ -86,7 +89,7 @@ if ( isset( $options['transcript_dir'] ) ) {
 	$transcript_dir = $default_transcript_dir;
 }
 
-$episode_dir = rtrim( $episode_dir, '/' );
+$transcript_dir = rtrim( $transcript_dir, '/' ) . '/';
 
 if ( ! isset( $options['prefix_words'] ) ) {
 	$options['prefix_words'] = 5;
@@ -143,7 +146,7 @@ if ( ! file_exists( $options['output_dir'] ) ) {
 	die( "Could not create directory: " . $options['output_dir'] . "\n" );
 }
 
-$all_transcripts = array_reverse( glob( "transcripts/*" . $options['podcast'] . "*/*.vtt" ) );
+$all_transcripts = array_reverse( glob( $transcript_dir . "*" . $options['podcast'] . "*/*.vtt" ) );
 
 $transcripts = array();
 
@@ -319,7 +322,7 @@ foreach ( $transcripts as $transcript_file ) {
 				}
 
 				if ( isset( $options['extract'] ) ) {
-					$audio_files = glob( $episode_dir . "/*" . $options['podcast'] . "*/*guid=" . $guid . "*.*" );
+					$audio_files = glob( $episode_dir . "*" . $options['podcast'] . "*/*guid=" . $guid . "*.*" );
 
 					if ( empty( $audio_files ) ) {
 						die( "Could not find audio for " . $transcript_file . "\n" );

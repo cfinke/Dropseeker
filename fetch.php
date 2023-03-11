@@ -10,8 +10,6 @@ $default_options = default_options();
 $default_episode_dir = __DIR__ . '/episodes/';
 $default_transcript_dir = __DIR__ . '/transcripts/';
 
-
-
 $options = getopt( "", array(
 	"feed:",
 	"title:",
@@ -63,6 +61,8 @@ if ( isset( $options['episode_dir'] ) ) {
 	$episode_dir = $default_episode_dir;
 }
 
+$episode_dir = rtrim( $episode_dir, '/' ) . '/';
+
 if ( isset( $options['transcript_dir'] ) ) {
 	$transcript_dir = $options['transcript_dir'];
 
@@ -73,7 +73,6 @@ if ( isset( $options['transcript_dir'] ) ) {
 	$transcript_dir = $default_transcript_dir;
 }
 
-$episode_dir = rtrim( $episode_dir, '/' ) . '/';
 $transcript_dir = rtrim( $transcript_dir, '/' ) . '/';
 
 if ( empty( $options['feed'] ) ) {
