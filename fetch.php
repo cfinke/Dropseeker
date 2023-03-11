@@ -95,8 +95,10 @@ foreach ( $xml->channel->item as $item ) {
 	}
 
 	if ( isset( $options['search'] ) ) {
-		if ( false === stripos( $item->pubDate . " " . $item->title, $options['search'] ) ) {
-			echo $options['search'] . " not in " . $date . " - " . $item->title . "\n";
+		$searchable_text = $date . " " . $item->title;
+
+		if ( false === stripos( $searchable_text, $options['search'] ) ) {
+			echo date( "Y-m-d H:i:s: " ) . $options['search'] . " not in " . $searchable_text . "\n";
 			continue;
 		}
 	}
