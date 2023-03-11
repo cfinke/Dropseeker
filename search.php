@@ -61,6 +61,16 @@ foreach ( array( "before", "after", "output_dir", "file" ) as $arg ) {
 	}
 }
 
+foreach ( $options as $arg => $val ) {
+	if ( is_array( $val ) ) {
+		$val = array_map( 'trim', $val );
+	} else {
+		$val = trim( $val );
+	}
+
+	$options[ $arg ] = $val;
+}
+
 $options['output_dir'] = trim( $options['output_dir'] );
 $options['output_dir'] = preg_replace( '/^~/', $_SERVER['HOME'], $options['output_dir'] );
 
