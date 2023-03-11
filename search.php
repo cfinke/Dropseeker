@@ -245,18 +245,26 @@ foreach ( $transcripts as $transcript_file ) {
 				}
 
 				if ( isset( $options['extract'] ) ) {
+					$audio_files = glob( $episode_dir . "/*" . $options['podcast'] . "*/*guid=" . $guid . "*.*" );
+
+					if ( empty( $audio_files ) ) {
+						die( "Could not find audio for " . $transcript_file . "\n" );
+					}
+
+					$audio_file = $audio_files[0];
+
 					shell_exec(
 						"ffmpeg -hide_banner -loglevel error -y -ss "
 							. escapeshellarg( floatval( $start_in_seconds - $options['before'] ) )
 							. " -t "
 							. ( $end_in_seconds - $start_in_seconds + $options['before'] + $options['after'] )
-							. " -i " . escapeshellarg( $mp3_file )
+							. " -i " . escapeshellarg( $audio_file )
 							. " "
 							. escapeshellarg(
 								rtrim( $options['output_dir'], '/' )
-								. '/' . $search_term
-								. " - " . basename( $mp3_file )
-								. " - " . $word_entry[2] . ".aif"
+								. '/' . substr( $search_term
+								. " - " . basename( $audio_file ), 0, 200 )
+								. " - " . $timestamp_in_filename . ".aif"
 							)
 					);
 				}
