@@ -4,7 +4,25 @@ error_reporting( E_ALL );
 
 set_time_limit( 0 );
 
-$options = getopt( "", array( "search:", "podcast:", "before:", "after:", "output_dir:", "match:", "extract", 'exclude:', 'prefix_words:', 'suffix_words:', ) );
+$default_episode_dir = __DIR__ . '/episodes/';
+$default_transcript_dir = __DIR__ . '/transcripts/';
+
+$options = getopt( "", array(
+	"search:",
+	"podcast:",
+	"before:",
+	"after:",
+	"output_dir:",
+	"match:",
+	"extract",
+	'exclude:',
+	'prefix_words:',
+	'suffix_words:',
+	'include:',
+	'limit_per_episode:',
+	'limit:',
+	'episode_dir:',
+) );
 
 if ( ! isset( $options['search'] ) ) {
 	$options['search'] = array();
@@ -19,21 +37,51 @@ if ( empty( $options['podcast'] ) ) {
 	$options['podcast'] = '*';
 }
 
-if ( empty( $options['match'] ) ) {
-	$options['match'] = '*';
+if ( isset( $options['match'] ) ) {
+	if ( ! is_array( $options['match'] ) ) {
+		$options['match'] = array( $options['match'] );
+	}
 }
 
 if ( ! isset( $options['before'] ) ) {
 	$options['before'] = .1;
 }
+else {
+	$options['before'] = floatval( $options['before'] );
+}
 
 if ( ! isset( $options['after'] ) ) {
 	$options['after'] = .1;
+}
+else {
+	$options['after'] = floatval( $options['after'] );
 }
 
 if ( empty( $options['output_dir'] ) ) {
 	$options['output_dir'] = 'search-results/';
 }
+
+if ( isset( $options['episode_dir'] ) ) {
+	$episode_dir = $options['episode_dir'];
+
+	if ( substr( $episode_dir, 0, 1 ) != '/' ) {
+		$episode_dir = getcwd() . '/' . $episode_dir;
+	}
+} else {
+	$episode_dir = $default_episode_dir;
+}
+
+if ( isset( $options['transcript_dir'] ) ) {
+	$transcript_dir = $options['transcript_dir'];
+
+	if ( substr( $transcript_dir, 0, 1 ) != '/' ) {
+		$transcript_dir = getcwd() . '/' . $transcript_dir;
+	}
+} else {
+	$transcript_dir = $default_transcript_dir;
+}
+
+$episode_dir = rtrim( $episode_dir, '/' );
 
 if ( ! isset( $options['prefix_words'] ) ) {
 	$options['prefix_words'] = 5;
@@ -46,6 +94,12 @@ if ( ! isset( $options['suffix_words'] ) ) {
 if ( isset( $options['exclude'] ) ) {
 	if ( ! is_array( $options['exclude'] ) ) {
 		$options['exclude'] = array( $options['exclude'] );
+	}
+}
+
+if ( isset( $options['include'] ) ) {
+	if ( ! is_array( $options['include'] ) ) {
+		$options['include'] = array( $options['include'] );
 	}
 }
 
@@ -107,7 +161,11 @@ foreach ( $all_transcripts as $transcript ) {
 $last_start_time = '0:00.000';
 $last_end_time = '0:00.000';
 
+$matches_found = 0;
+
 foreach ( $transcripts as $transcript_file ) {
+	$matches_found_in_episode = 0;
+
 	$parsed_transcript = array();
 
 	$lines = file( $transcript_file );
@@ -202,6 +260,17 @@ foreach ( $transcripts as $transcript_file ) {
 					}
 				}
 
+				if ( ! empty( $options['include'] ) ) {
+					foreach ( $options['include'] as $include_option ) {
+						if ( false === stripos( $exclusion_search_string, $include_option ) ) {
+							continue 2;
+						}
+					}
+				}
+
+				$matches_found_in_episode++;
+				$matches_found++;
+
 				echo $transcript_file . " @ " . $start . " - " . $end . ":\n\t" . $exclusion_search_string . "\n";
 
 				preg_match_all( '/\(guid=(.+)\)/', $transcript_file, $m );
@@ -268,6 +337,14 @@ foreach ( $transcripts as $transcript_file ) {
 							)
 					);
 				}
+
+				if ( isset( $options['limit'] ) && $matches_found == $options['limit'] ) {
+					break 3;
+				}
+
+				if ( isset( $options['limit_per_episode'] ) && $matches_found_in_episode == $options['limit_per_episode'] ) {
+					continue 2;
+				}
 			}
 		}
 	}
@@ -328,14 +405,28 @@ function matches_search_term( $word, $search_term ) {
 function usage() {
 	echo "Usage: php " . $_SERVER['PHP_SELF'] . " --search [search term]\n";
 	echo "\n";
-	echo "\t--search   The search term to find. Supports wildcards; `po*st` will match both `podcast` and `post`. You can specify multiple search terms at once.\n\n";
-	echo "\t--podcast  Which podcast(s) to search; this is matched against the directories containing the transcripts.\n\n";
-	echo "\t--match    A search string for filtering which episodes are searched.\n\n";
-	echo "\t--exclude  A search string that, if it matches text around the search result, will be excluded from the final results.\n\n";
-	echo "\t--extract  Whether to extract audio clips of each search result. Requires ffmpeg.\n\n";
-	echo "\t--output_dir   The output directory for extracted clips. Defaults to `./search-results/`\n\n";
-	echo "\t--before   How many seconds before the matched search term that will be included in extracted clips.\n\n";
-	echo "\t--after    How many seconds after the matched search term will be included in extracted clips.\n\n";
-	echo "\t--prefix_words How many words to display before the matched term in the output.\n\n";
-	echo "\t--suffix_words How many words to display after the matched term in the output.\n\n";
+	echo "\t--search            The search term to find. Supports wildcards; `po*st` will match both `podcast`\n" .
+		 "\t                    and `post`. You can specify multiple search terms at once.\n\n";
+	echo "\t--podcast           Which podcast(s) to search; this is matched against the directories containing the transcripts.\n\n";
+	echo "\t--match             A search string for filtering which episodes are searched.\n\n";
+	echo "\t--exclude           A search string that, if it matches text around the search result, will be excluded from the final results.\n\n";
+
+	echo "\n";
+	echo "\t--extract           Whether to extract audio clips of each search result. Requires ffmpeg.\n\n";
+	echo "\t--output_dir        The output directory for extracted clips. Defaults to `./search-results/`\n\n";
+	echo "\t--before            How many seconds before the matched search term that will be included in extracted clips.\n\n";
+	echo "\t--after             How many seconds after the matched search term will be included in extracted clips.\n\n";
+
+	echo "\n";
+	echo "\t--prefix_words      How many words to display before the matched term in the output.\n\n";
+	echo "\t--suffix_words      How many words to display after the matched term in the output.\n\n";
+	echo "\t--include           Only consider a match if the preview string (that is, the words before and after\n" .
+		 "\t                    it as determined by prefix_words and suffix_words, match this argument.\n\n";
+
+	echo "\n";
+	echo "\t--episode_dir       The directory containing the podcast folders.\n\n";
+
+	echo "\n";
+	echo "\t--limit             Stop after finding this many matches.\n\n";
+	echo "\t--limit_per_episode Stop searching a given episode after finding this many matches in it.\n\n";
 }
