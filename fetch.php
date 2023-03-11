@@ -4,6 +4,9 @@ set_time_limit( 0 );
 
 error_reporting( E_ALL );
 
+require "dropseeker.php";
+$default_options = default_options();
+
 $default_episode_dir = __DIR__ . '/episodes/';
 $default_transcript_dir = __DIR__ . '/transcripts/';
 

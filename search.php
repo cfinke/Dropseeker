@@ -4,6 +4,9 @@ error_reporting( E_ALL );
 
 set_time_limit( 0 );
 
+require "dropseeker.php";
+$default_options = default_options();
+
 $default_episode_dir = __DIR__ . '/episodes/';
 $default_transcript_dir = __DIR__ . '/transcripts/';
 
@@ -23,6 +26,8 @@ $options = getopt( "", array(
 	'limit:',
 	'episode_dir:',
 ) );
+
+$options = array_merge( $default_options, $options );
 
 if ( ! isset( $options['search'] ) ) {
 	$options['search'] = array();
