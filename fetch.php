@@ -104,7 +104,7 @@ foreach ( $xml->channel->item as $item ) {
 	}
 
 	$title = str_replace( '/', ' ', $item->title );
-	$filename_base = trim( $date . ' - ' . $title ) . " (guid=" . $guid . ")";
+	$filename_base = substr( trim( $date . ' - ' . $title ), 0, 200 ). " (guid=" . $guid . ")";
 
 	$mp3_url = $item->enclosure['url'];
 
