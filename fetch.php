@@ -7,7 +7,24 @@ error_reporting( E_ALL );
 $default_episode_dir = __DIR__ . '/episodes/';
 $default_transcript_dir = __DIR__ . '/transcripts/';
 
-$options = getopt( "", array( "feed:", "title:", "help", "search:", "fetch_only", "confirm", "episode_dir:", "transcript_dir:" ) );
+
+
+$options = getopt( "", array(
+	"feed:",
+	"title:",
+	"help",
+	"search:",
+	"fetch_only",
+	"transcribe_only",
+	"confirm",
+	"episode_dir:",
+	"transcript_dir:",
+	"exclude:",
+	"before_date:",
+	"after_date:",
+) );
+
+$options = array_merge( $default_options, $options );
 
 if ( isset( $options['help'] ) ) {
 	usage();
@@ -19,14 +36,36 @@ if ( isset( $options['confirm'] ) ) {
 	$options['confirm'] = true;
 }
 
+if ( isset( $options['exclude'] ) ) {
+	if ( ! is_array( $options['exclude'] ) ) {
+		$options['exclude'] = array( $options['exclude'] );
+	}
+}
+
+if ( isset( $options['before_date'] ) ) {
+	$options['before_date'] = date( "Y-m-d", strtotime( $options['before_date'] ) );
+}
+
+if ( isset( $options['after_date'] ) ) {
+	$options['after_date'] = date( "Y-m-d", strtotime( $options['after_date'] ) );
+}
+
 if ( isset( $options['episode_dir'] ) ) {
 	$episode_dir = $options['episode_dir'];
+
+	if ( substr( $episode_dir, 0, 1 ) != '/' ) {
+		$episode_dir = getcwd() . '/' . $episode_dir;
+	}
 } else {
 	$episode_dir = $default_episode_dir;
 }
 
 if ( isset( $options['transcript_dir'] ) ) {
 	$transcript_dir = $options['transcript_dir'];
+
+	if ( substr( $transcript_dir, 0, 1 ) != '/' ) {
+		$transcript_dir = getcwd() . '/' . $transcript_dir;
+	}
 } else {
 	$transcript_dir = $default_transcript_dir;
 }
@@ -94,12 +133,35 @@ foreach ( $xml->channel->item as $item ) {
 		$guid = md5( $guid );
 	}
 
+	if ( isset( $options['before_date'] ) ) {
+		if ( date( "Y-m-d", strtotime( $item->pubDate ) ) >= $options['before_date'] ) {
+			echo "Skipping " . $item->pubDate . " " . $item->title . "\n";
+			continue;
+		}
+	}
+
+	if ( isset( $options['after_date'] ) ) {
+		if ( date( "Y-m-d", strtotime( $item->pubDate ) ) <= $options['after_date'] ) {
+			echo "Skipping " . $item->pubDate . " " . $item->title . "\n";
+			continue;
+		}
+	}
+
 	if ( isset( $options['search'] ) ) {
 		$searchable_text = $date . " " . $item->title;
 
 		if ( false === stripos( $searchable_text, $options['search'] ) ) {
 			echo date( "Y-m-d H:i:s: " ) . $options['search'] . " not in " . $searchable_text . "\n";
 			continue;
+		}
+	}
+
+	if ( ! empty( $options['exclude'] ) ) {
+		foreach ( $options['exclude'] as $exclude_option ) {
+			if ( false !== stripos( $item->pubDate . " " . $item->title, $exclude_option ) ) {
+				echo "Skipping " . $item->pubDate . " " . $item->title . "\n";
+				continue 2;
+			}
 		}
 	}
 
@@ -202,17 +264,21 @@ function usage() {
 	echo "\n";
 	echo "Usage: php " . $_SERVER['PHP_SELF'] . " --feed http://example.com/rss.xml\n";
 	echo "\n";
-	echo "\t--feed           The URL of the RSS feed to process.\n\n";
-	echo "\t--title          The title to give this podcast, used to name the episode and transcript directories. Defaults to the title given in the RSS feed.\n\n";
-	echo "\t--help           Show this instructional output.\n\n";
-	echo "\t--search         Only download or transcribe episodes that match this string.\n\n";
-	echo "\t--fetch_only     Don't try to transcribe anything; just download episodes.\n\n";
-	echo "\t--confirm        Require confirmation before downloading or transcribing anything.\n\n";
-	echo "\t--episode_dir    Set a different output directory for episode audio files. Defaults to ./episodes/\n\n";
-	echo "\t--transcript_dir Set a different output directory for episode transcripts. Defaults to ./transcripts/\n\n";
+	echo "\t--feed            The URL of the RSS feed to process.\n\n";
+	echo "\t--title           The title to give this podcast, used to name the episode and transcript directories. Defaults to the title given in the RSS feed.\n\n";
+	echo "\t--help            Show this instructional output.\n\n";
+	echo "\t--search          Only download or transcribe episodes that match this string.\n\n";
+	echo "\t--fetch_only      Don't try to transcribe anything; just download episodes.\n\n";
+	echo "\t--transcribe_only Don't try to download anything; just transcribe downloaded episodes.\n\n";
+	echo "\t--confirm         Require confirmation before downloading or transcribing anything.\n\n";
+	echo "\t--episode_dir     Set a different output directory for episode audio files. Defaults to ./episodes/\n\n";
+	echo "\t--transcript_dir  Set a different output directory for episode transcripts. Defaults to ./transcripts/\n\n";
+	echo "\t--exclude         Exclude episodes that include this string in their date/title.\n\n";
+	echo "\t--before-date     Only download episodes that were published before this date.\n\n";
+	echo "\t--after-date      Only download episodes that were published after this date.\n\n";
 
-	echo "\t--whisper_[arg]  Pass the command line option `arg` to the `whisper` transcription tool. e.g., `--whisper_model medium`\n";
+	echo "\t--whisper_[arg]   Pass the command line option `arg` to the `whisper` transcription tool. e.g., `--whisper_model medium`\n";
 	echo "\tDefault whisper args:\n";
-	echo "\t\t--model        tiny\n";
-	echo "\t\t--output_dir   The subdirectory of --transcript_dir with the same name as --title.\n\n";
+	echo "\t\t--model         tiny\n";
+	echo "\t\t--output_dir    The subdirectory of --transcript_dir with the same name as --title.\n\n";
 }
