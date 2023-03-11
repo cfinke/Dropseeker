@@ -131,7 +131,7 @@ foreach ( $transcripts as $transcript_file ) {
 			foreach ( $words as $word ) {
 				$parsed_transcript[] = array(
 					$word,
-					preg_replace( '/[^a-z]/', '', strtolower( $word ) ),
+					preg_replace( '/[^a-z0-9]/', '', strtolower( $word ) ),
 					$last_start_time,
 					$last_end_time,
 				);
