@@ -110,9 +110,14 @@ foreach ( $xml->channel->item as $item ) {
 
 	echo "Checking " . $filename_base . "...\n";
 
-	$mp3_files = glob( $episode_dir . "* (guid=" . $guid . ").mp3" );
+	$matching_episodes = glob( $episode_dir . "* (guid=" . $guid . ").*" );
 
-	if ( empty( $mp3_files ) ) {
+	if ( empty( $matching_episodes ) ) {
+		if ( isset( $options['transcribe_only'] ) ) {
+			echo "Missing " . $filename_base . "\n";
+			continue;
+		}
+
 		if ( isset( $options['confirm'] ) ) {
 			echo "\007";
 			$answer = readline( "Download " . $filename_base . "? [y/n] " );
@@ -124,6 +129,7 @@ foreach ( $xml->channel->item as $item ) {
 			echo "Downloading " . $filename_base . " from " . $mp3_url . "...\n";
 			curl_to_file( $mp3_url, $episode_dir . $filename_base . '.mp3' );
 			echo "--------\n";
+			$matching_episodes[] = $episode_dir . $filename_base . '.mp3';
 		}
 	}
 
@@ -138,11 +144,13 @@ foreach ( $xml->channel->item as $item ) {
 		}
 
 		if ( 'y' === strtolower( $answer ) ) {
-			echo "Transcribing " . $filename_base . "...\n";
-
 			$cwd = getcwd();
 
 			chdir( $episode_dir );
+
+			$audio_file = $matching_episodes[0];
+
+			echo "Transcribing " . $audio_file . "...\n";
 
 			$whisper_args = array(
 				'model' => 'tiny',
@@ -161,7 +169,7 @@ foreach ( $xml->channel->item as $item ) {
 				$whisper_command .= ' --' . $arg . ' ' . escapeshellarg( $val );
 			}
 
-			$whisper_command .= ' ' . escapeshellarg( $filename_base . '.mp3' );
+			$whisper_command .= ' ' . escapeshellarg( basename( $audio_file ) );
 
 			system( $whisper_command );
 
