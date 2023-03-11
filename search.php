@@ -84,7 +84,25 @@ if ( ! file_exists( $options['output_dir'] ) ) {
 	die( "Could not create directory: " . $options['output_dir'] . "\n" );
 }
 
-$transcripts = glob( "transcripts/*" . $options['podcast'] . "*/" . "*" . $options['match'] . "*.vtt" );
+$all_transcripts = array_reverse( glob( "transcripts/*" . $options['podcast'] . "*/*.vtt" ) );
+
+$transcripts = array();
+
+foreach ( $all_transcripts as $transcript ) {
+	$filename = basename( $transcript );
+
+	if ( isset( $options['match'] ) ) {
+		foreach ( $options['match'] as $match ) {
+			if ( false !== stripos( $filename, $match ) ) {
+				$transcripts[] = $transcript;
+				continue 2;
+			}
+		}
+	}
+	else {
+		$transcripts[] = $transcript;
+	}
+}
 
 $last_start_time = '0:00.000';
 $last_end_time = '0:00.000';
