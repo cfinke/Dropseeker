@@ -14,7 +14,7 @@ $options = getopt( "", array(
 	"feed:",
 	"title:",
 	"help",
-	"search:",
+	"match:",
 	"fetch_only",
 	"transcribe_only",
 	"confirm",
@@ -149,11 +149,11 @@ foreach ( $xml->channel->item as $item ) {
 		}
 	}
 
-	if ( isset( $options['search'] ) ) {
+	if ( isset( $options['match'] ) ) {
 		$searchable_text = $date . " " . $item->title;
 
-		if ( false === stripos( $searchable_text, $options['search'] ) ) {
-			echo date( "Y-m-d H:i:s: " ) . $options['search'] . " not in " . $searchable_text . "\n";
+		if ( false === stripos( $searchable_text, $options['match'] ) ) {
+			echo date( "Y-m-d H:i:s: " ) . $options['match'] . " not in " . $searchable_text . "\n";
 			continue;
 		}
 	}
@@ -269,7 +269,7 @@ function usage() {
 	echo "\t--feed            The URL of the RSS feed to process.\n\n";
 	echo "\t--title           The title to give this podcast, used to name the episode and transcript directories. Defaults to the title given in the RSS feed.\n\n";
 	echo "\t--help            Show this instructional output.\n\n";
-	echo "\t--search          Only download or transcribe episodes that match this string.\n\n";
+	echo "\t--match           Only download or transcribe episodes that match this string.\n\n";
 	echo "\t--fetch_only      Don't try to transcribe anything; just download episodes.\n\n";
 	echo "\t--transcribe_only Don't try to download anything; just transcribe downloaded episodes.\n\n";
 	echo "\t--confirm         Require confirmation before downloading or transcribing anything.\n\n";
