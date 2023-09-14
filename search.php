@@ -279,7 +279,7 @@ foreach ( $transcripts as $transcript_file ) {
 				$matches_found_in_episode++;
 				$matches_found++;
 
-				echo $transcript_file . " @ " . $start . " - " . $end . ":\n\t" . $exclusion_search_string . "\n";
+				echo str_replace( $transcript_dir, '', $transcript_file ) . " @ " . $start . " - " . $end . ":\n\t" . $exclusion_search_string . "\n";
 
 				preg_match_all( '/\(guid=(.+)\)/', $transcript_file, $m );
 				$guid = $m[1][0];

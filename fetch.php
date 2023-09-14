@@ -169,10 +169,20 @@ foreach ( $xml->channel->item as $item ) {
 	}
 
 	if ( isset( $options['match'] ) ) {
-		$searchable_text = $date . " " . $item->title;
+		$matched = false;
 
-		if ( false === stripos( $searchable_text, $options['match'] ) ) {
-			echo date( "Y-m-d H:i:s: " ) . $options['match'] . " not in " . $searchable_text . "\n";
+		foreach ( $options['match'] as $match_string ) {
+			$searchable_text = $date . " " . $item->title;
+
+			if ( false === stripos( $searchable_text, $match_string ) ) {
+			} else {
+				$matched = true;
+				break;
+			}
+		}
+
+		if ( ! $matched ) {
+			echo "No match found in " . $searchable_text . "\n";
 			continue;
 		}
 	}
@@ -315,9 +325,9 @@ function curl_to_file( $url, $path ) {
 	$fp = fopen( $temp_file_path, 'w+' );
 
 	$ch = curl_init( $url );
-	curl_setopt( $ch, CURLOPT_FILE, $fp ); 
+	curl_setopt( $ch, CURLOPT_FILE, $fp );
 	curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
-	curl_exec( $ch ); 
+	curl_exec( $ch );
 	curl_close( $ch );
 
 	fclose( $fp );
