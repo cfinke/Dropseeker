@@ -23,6 +23,7 @@ $options = getopt( "", array(
 	"exclude:",
 	"before_date:",
 	"after_date:",
+	"whisper_cpp:", // Path to whisper.cpp
 ) );
 
 $options = array_merge( $default_options, $options );
@@ -49,6 +50,24 @@ if ( isset( $options['before_date'] ) ) {
 
 if ( isset( $options['after_date'] ) ) {
 	$options['after_date'] = date( "Y-m-d", strtotime( $options['after_date'] ) );
+}
+
+if ( isset( $options['match'] ) ) {
+	if ( ! is_array( $options['match'] ) ) {
+		$options['match'] = array( $options['match'] );
+	}
+}
+
+if ( isset( $options['whisper_cpp'] ) ) {
+	$options['whisper_cpp'] = rtrim( $options['whisper_cpp'], '/' );
+
+	if ( ! is_dir( $options['whisper_cpp'] ) ) {
+		die( "The path to whisper.cpp does not exist.\n" );
+	}
+
+	if ( ! file_exists( $options['whisper_cpp'] . '/main' ) ) {
+		die( "Could not find the `main` executable in " . $options['whisper_cpp'] . "/\n" );
+	}
 }
 
 if ( isset( $options['episode_dir'] ) ) {
@@ -208,13 +227,13 @@ foreach ( $xml->channel->item as $item ) {
 		}
 
 		if ( 'y' === strtolower( $answer ) ) {
-			$cwd = getcwd();
-
-			chdir( $episode_dir );
-
 			$audio_file = $matching_episodes[0];
 
 			echo "Transcribing " . $audio_file . "...\n";
+
+			$cwd = getcwd();
+
+			chdir( $episode_dir );
 
 			$whisper_args = array(
 				'model' => 'tiny',
@@ -222,20 +241,65 @@ foreach ( $xml->channel->item as $item ) {
 			);
 
 			foreach ( $argv as $idx => $arg ) {
-				if ( strpos( $arg, "--whisper_" ) === 0 ) {
+				if ( strpos( $arg, "--whisper_" ) === 0 && $arg != '--whisper_cpp' ) {
 					$whisper_args[ substr( $arg, 10 ) ] = $argv[ $idx + 1 ];
 				}
 			}
 
-			$whisper_command = 'whisper';
+			if ( isset( $options['whisper_cpp'] ) ) { // whisper.cpp is a much faster version that uses the GPU on Apple Silicon Macs.
+				if ( ! file_exists( $options['whisper_cpp'] . '/models/ggml-' . $whisper_args['model'] . '.bin' ) ) {
+					//die( "Could not find necessary file " . $options['whisper_cpp'] . '/models/ggml-' . $whisper_args['model'] . '.bin' . "\n" );
+				}
 
-			foreach ( $whisper_args as $arg => $val ) {
-				$whisper_command .= ' --' . $arg . ' ' . escapeshellarg( $val );
+				// whisper.cpp requires wav format.
+				$tmp_file = tempnam( sys_get_temp_dir(), "dropseeker-" );
+
+				// The filename has to end in .wav or ffmpeg will complain. In theory, this file isn't guaranteed to not exist already, but come on.
+				rename( $tmp_file, $tmp_file . '.wav' );
+				$tmp_file .= '.wav';
+
+				$ffmpeg_command = "ffmpeg -y -i " . escapeshellarg( basename( $audio_file ) ) . " -ar 16000 -ac 1 -c:a pcm_s16le " . escapeshellarg( $tmp_file );
+				$whisper_command = escapeshellarg( $options['whisper_cpp'] . '/main' );
+
+				foreach ( $whisper_args as $arg => $val ) {
+					// These are handled as special cases.
+					if ( 'model' == $arg ) {
+						continue;
+					}
+
+					if ( 'output_dir' == $arg ) {
+						continue;
+					}
+
+
+					$whisper_command .= ' --' . $arg . ' ' . escapeshellarg( $val );
+				}
+
+				$whisper_command .= ' -m ' . escapeshellarg( $options['whisper_cpp'] . '/models/ggml-' . $whisper_args['model'] . '.bin' ) . ' --output-txt --output-vtt  --output-srt --output-json -f ' . escapeshellarg( $tmp_file ) . ' --output-file ' . escapeshellarg( rtrim( $whisper_args['output_dir'], '/' ) . '/' . pathinfo( $audio_file, PATHINFO_FILENAME ) );
+
+//				echo "Temp file is " . $tmp_file . "\n";
+//				echo "ffmpeg command is " . $ffmpeg_command . "\n";
+
+				system( $ffmpeg_command );
+
+//				echo "Whisper command is " . $whisper_command . "\n";
+
+				system( $whisper_command );
+
+				unlink( $tmp_file );
 			}
+			else {
 
-			$whisper_command .= ' ' . escapeshellarg( basename( $audio_file ) );
+				$whisper_command = 'whisper';
 
-			system( $whisper_command );
+				foreach ( $whisper_args as $arg => $val ) {
+					$whisper_command .= ' --' . $arg . ' ' . escapeshellarg( $val );
+				}
+
+				$whisper_command .= ' ' . escapeshellarg( basename( $audio_file ) );
+
+				system( $whisper_command );
+			}
 
 			chdir( $cwd );
 
