@@ -252,7 +252,11 @@ foreach ( $xml->channel->item as $item ) {
 
 			foreach ( $argv as $idx => $arg ) {
 				if ( strpos( $arg, "--whisper_" ) === 0 && $arg != '--whisper_cpp' ) {
-					$whisper_args[ substr( $arg, 10 ) ] = $argv[ $idx + 1 ];
+					if ( isset( $argv[ $idx + 1 ] ) && $argv[ $idx + 1 ][0] != '-' ) {
+						$whisper_args[ substr( $arg, 10 ) ] = $argv[ $idx + 1 ];
+					} else {
+						$whisper_args[ substr( $arg, 10 ) ] = null;
+					}
 				}
 			}
 
