@@ -293,7 +293,7 @@ foreach ( $xml->channel->item as $item ) {
 					}
 				}
 
-				$whisper_command .= ' -m ' . escapeshellarg( $options['whisper_cpp'] . '/models/ggml-' . $whisper_args['model'] . '.bin' ) . ' --output-txt --output-vtt  --output-srt --output-json -f ' . escapeshellarg( $tmp_file ) . ' --output-file ' . escapeshellarg( rtrim( $whisper_args['output_dir'], '/' ) . '/' . pathinfo( $audio_file, PATHINFO_FILENAME ) );
+				$whisper_command .= ' -m ' . escapeshellarg( $options['whisper_cpp'] . '/models/ggml-' . $whisper_args['model'] . '.bin' ) . ' --output-vtt -f ' . escapeshellarg( $tmp_file ) . ' --output-file ' . escapeshellarg( rtrim( $whisper_args['output_dir'], '/' ) . '/' . pathinfo( $audio_file, PATHINFO_FILENAME ) );
 
 //				echo "Temp file is " . $tmp_file . "\n";
 //				echo "ffmpeg command is " . $ffmpeg_command . "\n";
