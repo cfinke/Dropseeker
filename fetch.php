@@ -286,7 +286,11 @@ foreach ( $xml->channel->item as $item ) {
 					}
 
 
-					$whisper_command .= ' --' . $arg . ' ' . escapeshellarg( $val );
+					$whisper_command .= ' --' . $arg;
+
+					if ( ! is_null( $val ) ) {
+						$whisper_command .= ' ' . escapeshellarg( $val );
+					}
 				}
 
 				$whisper_command .= ' -m ' . escapeshellarg( $options['whisper_cpp'] . '/models/ggml-' . $whisper_args['model'] . '.bin' ) . ' --output-txt --output-vtt  --output-srt --output-json -f ' . escapeshellarg( $tmp_file ) . ' --output-file ' . escapeshellarg( rtrim( $whisper_args['output_dir'], '/' ) . '/' . pathinfo( $audio_file, PATHINFO_FILENAME ) );
