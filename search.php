@@ -26,9 +26,16 @@ $options = getopt( "", array(
 	'limit:',
 	'episode_dir:',
 	'transcript_dir:',
+	'help',
 ) );
 
 $options = array_merge( $default_options, $options );
+
+if ( isset( $options['help'] ) ) {
+	usage();
+
+	die;
+}
 
 if ( ! isset( $options['search'] ) ) {
 	$options['search'] = array();
@@ -413,28 +420,26 @@ function matches_search_term( $word, $search_term ) {
 function usage() {
 	echo "Usage: php " . $_SERVER['PHP_SELF'] . " --search [search term]\n";
 	echo "\n";
-	echo "\t--search            The search term to find. Supports wildcards; `po*st` will match both `podcast`\n" .
-		 "\t                    and `post`. You can specify multiple search terms at once.\n\n";
-	echo "\t--podcast           Which podcast(s) to search; this is matched against the directories containing the transcripts.\n\n";
-	echo "\t--match             A search string for filtering which episodes are searched.\n\n";
-	echo "\t--exclude           A search string that, if it matches text around the search result, will be excluded from the final results.\n\n";
 
-	echo "\n";
-	echo "\t--extract           Whether to extract audio clips of each search result. Requires ffmpeg.\n\n";
-	echo "\t--output_dir        The output directory for extracted clips. Defaults to `./search-results/`\n\n";
-	echo "\t--before            How many seconds before the matched search term that will be included in extracted clips.\n\n";
-	echo "\t--after             How many seconds after the matched search term will be included in extracted clips.\n\n";
+	echo "Required arguments:
 
-	echo "\n";
-	echo "\t--prefix_words      How many words to display before the matched term in the output.\n\n";
-	echo "\t--suffix_words      How many words to display after the matched term in the output.\n\n";
-	echo "\t--include           Only consider a match if the preview string (that is, the words before and after\n" .
-		 "\t                    it as determined by prefix_words and suffix_words, match this argument.\n\n";
+	--search [string]         What to search for in transcripts.
 
-	echo "\n";
-	echo "\t--episode_dir       The directory containing the podcast folders.\n\n";
+Optional arguments:
 
-	echo "\n";
-	echo "\t--limit             Stop after finding this many matches.\n\n";
-	echo "\t--limit_per_episode Stop searching a given episode after finding this many matches in it.\n\n";
+	--after [float]           Extract an additional __ seconds from after each match.
+	--before [float]          Extract an additional __ seconds from before each match.
+	--exclude [string]        A search string that, if it matches text around the search result, will be excluded from the final results.
+	--episode_dir [path]      The directory in which the episode directories are stored, if not in the default location.
+	--extract                 Extract audio clips of each match.
+	--include [string]        Only consider a match if the full prefix + match + suffix also includes this string.
+	--output_dir [path]       The directory in which to store the extracted audio clips.
+	--limit [int]             Stop searching entirely after finding this many total matches.
+	--limit_per_episode [int] Stop searching an episode after finding this many matches in it.
+	--match [string]          Only check episodes that include this string in their filename.
+	--podcast [string]        Only search transcripts from podcasts that include this string in their title.
+	--prefix_words [int]      Show this many words before the matching string in the text search results.
+	--suffix_words [int]      Show this many words after the matching string in the text search results.
+	--transcript_dir [path]   The directory in which the transcript directories are stored, if not in the default location.
+";
 }

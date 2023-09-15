@@ -348,21 +348,32 @@ function usage() {
 	echo "\n";
 	echo "Usage: php " . $_SERVER['PHP_SELF'] . " --feed http://example.com/rss.xml\n";
 	echo "\n";
-	echo "\t--feed            The URL of the RSS feed to process.\n\n";
-	echo "\t--title           The title to give this podcast, used to name the episode and transcript directories. Defaults to the title given in the RSS feed.\n\n";
-	echo "\t--help            Show this instructional output.\n\n";
-	echo "\t--match           Only download or transcribe episodes that match this string.\n\n";
-	echo "\t--fetch_only      Don't try to transcribe anything; just download episodes.\n\n";
-	echo "\t--transcribe_only Don't try to download anything; just transcribe downloaded episodes.\n\n";
-	echo "\t--confirm         Require confirmation before downloading or transcribing anything.\n\n";
-	echo "\t--episode_dir     Set a different output directory for episode audio files. Defaults to ./episodes/\n\n";
-	echo "\t--transcript_dir  Set a different output directory for episode transcripts. Defaults to ./transcripts/\n\n";
-	echo "\t--exclude         Exclude episodes that include this string in their date/title.\n\n";
-	echo "\t--before-date     Only download episodes that were published before this date.\n\n";
-	echo "\t--after-date      Only download episodes that were published after this date.\n\n";
 
-	echo "\t--whisper_[arg]   Pass the command line option `arg` to the `whisper` transcription tool. e.g., `--whisper_model medium`\n";
-	echo "\tDefault whisper args:\n";
-	echo "\t\t--model         tiny\n";
-	echo "\t\t--output_dir    The subdirectory of --transcript_dir with the same name as --title.\n\n";
+
+	echo "Required arguments:
+
+	--feed [url]               The URL of a podcast RSS feed.
+
+Optional arguments:
+
+	--after_date [YYYY-MM-DD]  Only download/transcribe episodes published after this date.
+	--before_date [YYYY-MM-DD] Only download/transcribe episodes published before this date.
+	--confirm                  Require confirmation before downloading or transcribing an episode.
+	--episode_dir [path]       The directory in which to store the episode directories.
+	--exclude [string]         Don't download episodes that match this string.
+	--fetch_only               Just download episodes; don't transcribe.
+	--help                     Show the usage instructions.
+	--match [string]           Only download/transcribe episodes that match this string.
+	--title [string]           The string that should be used for the folders containing the recordings and transcripts.
+	--transcript_dir [path]    The directory in which to store the transcript directories.
+	--transcribe_only          Just transcribe episodes; don't download any new ones.
+	--whisper_cpp [path]       The path to whisper.cpp's installation folder, if you want to use it instead of the standard whisper tool. This folder should contain the `main` executable.
+	--whisper_[arg] [?arg]     Pass the command line option `arg` to the `whisper` executable. e.g., `--whisper_model medium` will call run `whisper --model medium`.
+
+	                           Default whisper args:
+	                                --model tiny
+	                                --output_dir The subdirectory of --transcript_dir with the same name as --title.
+
+";
+
 }
