@@ -250,6 +250,18 @@ foreach ( $xml->channel->item as $item ) {
 				'output_dir' => $transcript_dir,
 			);
 
+			// Check the default args from dropseeker.conf first.
+			foreach ( $default_options as $arg => $val ) {
+				if ( strpos( $arg, "whisper_" ) === 0 && $arg != 'whisper_cpp' ) {
+					if ( $val !== false ) {
+						$whisper_args[ substr( $arg, 8 ) ] = $val;
+					} else {
+						$whisper_args[ substr( $arg, 8 ) ] = null;
+					}
+				}
+			}
+
+			// Then check for any --whisper_* command line args in $argv. getopt() won't pick them up since we can't (won't) define them all in the getopt() call.
 			foreach ( $argv as $idx => $arg ) {
 				if ( strpos( $arg, "--whisper_" ) === 0 && $arg != '--whisper_cpp' ) {
 					if ( isset( $argv[ $idx + 1 ] ) && $argv[ $idx + 1 ][0] != '-' ) {
@@ -261,10 +273,6 @@ foreach ( $xml->channel->item as $item ) {
 			}
 
 			if ( isset( $options['whisper_cpp'] ) ) { // whisper.cpp is a much faster version that uses the GPU on Apple Silicon Macs.
-				if ( ! file_exists( $options['whisper_cpp'] . '/models/ggml-' . $whisper_args['model'] . '.bin' ) ) {
-					//die( "Could not find necessary file " . $options['whisper_cpp'] . '/models/ggml-' . $whisper_args['model'] . '.bin' . "\n" );
-				}
-
 				// whisper.cpp requires wav format.
 				$tmp_file = tempnam( sys_get_temp_dir(), "dropseeker-" );
 
