@@ -76,7 +76,7 @@ Optional:
 --episode_dir [path]      The directory in which the episode directories are stored, if not in the default location.
 --extract                 Extract audio clips of each match.
 --help                    Show the usage instructions.
---include [string]        Only consider a match if the full prefix + match + suffix also includes this string.
+--context [string]        Only consider a match if the full prefix + match + suffix also includes this string.
 --output_dir [path]       The directory in which to store the extracted audio clips.
 --limit [int]             Stop searching entirely after finding this many total matches.
 --limit_per_episode [int] Stop searching an episode after finding this many matches in it.

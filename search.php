@@ -21,7 +21,7 @@ $options = getopt( "", array(
 	'exclude:',
 	'prefix_words:',
 	'suffix_words:',
-	'include:',
+	'context:',
 	'limit_per_episode:',
 	'limit:',
 	'episode_dir:',
@@ -112,9 +112,9 @@ if ( isset( $options['exclude'] ) ) {
 	}
 }
 
-if ( isset( $options['include'] ) ) {
-	if ( ! is_array( $options['include'] ) ) {
-		$options['include'] = array( $options['include'] );
+if ( isset( $options['context'] ) ) {
+	if ( ! is_array( $options['context'] ) ) {
+		$options['context'] = array( $options['context'] );
 	}
 }
 
@@ -275,9 +275,9 @@ foreach ( $transcripts as $transcript_file ) {
 					}
 				}
 
-				if ( ! empty( $options['include'] ) ) {
-					foreach ( $options['include'] as $include_option ) {
-						if ( false === stripos( $exclusion_search_string, $include_option ) ) {
+				if ( ! empty( $options['context'] ) ) {
+					foreach ( $options['context'] as $context_includes ) {
+						if ( false === stripos( $exclusion_search_string, $context_includes ) ) {
 							continue 2;
 						}
 					}
@@ -432,7 +432,7 @@ Optional arguments:
 	--exclude [string]        A search string that, if it matches text around the search result, will be excluded from the final results.
 	--episode_dir [path]      The directory in which the episode directories are stored, if not in the default location.
 	--extract                 Extract audio clips of each match.
-	--include [string]        Only consider a match if the full prefix + match + suffix also includes this string.
+	--context [string]        Only consider a match if the full prefix + match + suffix also includes this string.
 	--output_dir [path]       The directory in which to store the extracted audio clips.
 	--limit [int]             Stop searching entirely after finding this many total matches.
 	--limit_per_episode [int] Stop searching an episode after finding this many matches in it.
