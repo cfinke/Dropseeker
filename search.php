@@ -423,7 +423,9 @@ function usage() {
 
 	echo "Required arguments:
 
-	--search [string]         What to search for in transcripts.
+	--search [string]         What to search for in transcripts. Supports wildcards like 'foo*' (words that start
+	                          with foo), 'foo * bar' ('foo' and 'bar' separated by one word), or 'foo*baz*bar' (any
+	                          word starting with 'foo', containing 'baz', and ending with 'bar').
 
 Optional arguments:
 
