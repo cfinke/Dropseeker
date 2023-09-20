@@ -286,49 +286,49 @@ foreach ( $transcripts as $transcript_file ) {
 				$matches_found_in_episode++;
 				$matches_found++;
 
-				echo str_replace( $transcript_dir, '', $transcript_file ) . " @ " . $start . " - " . $end . ":\n\t" . $exclusion_search_string . "\n";
-
-				preg_match_all( '/\(guid=(.+)\)/', $transcript_file, $m );
-				$guid = $m[1][0];
-
-				if ( ! $guid ) {
-					die( "Could not extract guid from " . $transcript_file . "\n" );
-				}
-
-				$timestamp_in_filename = '';
-
-				$start_in_seconds = 0;
-				$start_parts = explode( ":", $start );
-
-				if ( count( $start_parts ) < 3 ) {
-					array_unshift( $start_parts, '0' );
-				}
-
-				if ( count( $start_parts ) < 3 ) {
-					array_unshift( $start_parts, '0' );
-				}
-
-				for ( $i = 0, $len = count( $start_parts ); $i < $len; $i++ ) {
-					$start_part = array_pop( $start_parts );
-					$start_in_seconds += $start_part * ( pow( 60, $i ) );
-
-					// Use a 01h2m3s timestamp in the filename to avoid using :, which shows up as / on Mac.
-					if ( $i == 0 ) {
-						$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "s";
-					} else if ( $i == 1 ) {
-						$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "m" . $timestamp_in_filename;
-					} else if ( $i == 2 ) {
-						$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "h" . $timestamp_in_filename;
-					}
-				}
-
-				$end_in_seconds = 0;
-				$end_parts = explode( ":", $end );
-				for ( $i = 0, $len = count( $end_parts ); $i < $len; $i++ ) {
-					$end_in_seconds += array_pop( $end_parts ) * ( pow( 60, $i ) );
-				}
+				echo preg_replace( '/\s\(guid.*$/', '', str_replace( $transcript_dir, '', $transcript_file ) ) . " @ " . $start . ":\n\t" . $exclusion_search_string . "\n";
 
 				if ( isset( $options['extract'] ) ) {
+					preg_match_all( '/\(guid=(.+)\)/', $transcript_file, $m );
+					$guid = $m[1][0];
+
+					if ( ! $guid ) {
+						die( "Could not extract guid from " . $transcript_file . "\n" );
+					}
+
+					$timestamp_in_filename = '';
+
+					$start_in_seconds = 0;
+					$start_parts = explode( ":", $start );
+
+					if ( count( $start_parts ) < 3 ) {
+						array_unshift( $start_parts, '0' );
+					}
+
+					if ( count( $start_parts ) < 3 ) {
+						array_unshift( $start_parts, '0' );
+					}
+
+					for ( $i = 0, $len = count( $start_parts ); $i < $len; $i++ ) {
+						$start_part = array_pop( $start_parts );
+						$start_in_seconds += $start_part * ( pow( 60, $i ) );
+
+						// Use a 01h2m3s timestamp in the filename to avoid using :, which shows up as / on Mac.
+						if ( $i == 0 ) {
+							$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "s";
+						} else if ( $i == 1 ) {
+							$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "m" . $timestamp_in_filename;
+						} else if ( $i == 2 ) {
+							$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "h" . $timestamp_in_filename;
+						}
+					}
+
+					$end_in_seconds = 0;
+					$end_parts = explode( ":", $end );
+					for ( $i = 0, $len = count( $end_parts ); $i < $len; $i++ ) {
+						$end_in_seconds += array_pop( $end_parts ) * ( pow( 60, $i ) );
+					}
+
 					$audio_files = glob( $episode_dir . "*" . $options['podcast'] . "*/*guid=" . $guid . "*.*" );
 
 					if ( empty( $audio_files ) ) {
