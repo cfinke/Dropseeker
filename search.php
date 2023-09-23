@@ -153,7 +153,18 @@ if ( ! file_exists( $options['output_dir'] ) ) {
 	die( "Could not create directory: " . $options['output_dir'] . "\n" );
 }
 
-$all_transcripts = array_reverse( glob( $transcript_dir . "*" . $options['podcast'] . "*/*.vtt" ) );
+if ( ! is_array( $options['podcast'] ) ) {
+	$options['podcast'] = array( $options['podcast'] );
+}
+
+$all_transcripts = array();
+
+foreach ( $options['podcast'] as $podcast ) {
+	$all_transcripts = array_merge( $all_transcripts, glob( $transcript_dir . "*" . $podcast . "*/*.vtt" ) );
+}
+
+sort( $all_transcripts );
+$all_transcripts = array_reverse( $all_transcripts );
 
 $transcripts = array();
 
@@ -329,7 +340,11 @@ foreach ( $transcripts as $transcript_file ) {
 						$end_in_seconds += array_pop( $end_parts ) * ( pow( 60, $i ) );
 					}
 
-					$audio_files = glob( $episode_dir . "*" . $options['podcast'] . "*/*guid=" . $guid . "*.*" );
+					$audio_files = array();
+
+					foreach ( $options['podcast'] as $podcast ) {
+						$audio_files = array_merge( $audio_files, glob( $episode_dir . "*" . $podcast . "*/*guid=" . $guid . "*.*" ) );
+					}
 
 					if ( empty( $audio_files ) ) {
 						die( "Could not find audio for " . $transcript_file . "\n" );
