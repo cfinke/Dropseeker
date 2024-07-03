@@ -47,7 +47,7 @@ Optional:
 --exclude [string]         Don't download episodes that match this string.
 --fetch_only               Just download episodes; don't transcribe.
 --help                     Show the usage instructions.
---match [string]           Only download/transcribe episodes that match this string.
+--match [string]           Only download/transcribe episodes that match this string.  If multiple --match strings are supplied, it will include any episodes that match any of the supplied strings.
 --title [string]           The string that should be used for the folders containing the recordings and transcripts.
 --transcript_dir [path]    The directory in which to store the transcript directories.
 --transcribe_only          Just transcribe episodes; don't download any new ones.
