@@ -10,24 +10,24 @@ $default_options = default_options();
 $default_episode_dir = __DIR__ . '/episodes/';
 $default_transcript_dir = __DIR__ . '/transcripts/';
 
-$options = getopt( "", array(
-	"search:",
-	"podcast:",
-	"before:",
-	"after:",
-	"output_dir:",
-	"match:",
-	"extract",
-	'prefix_words:',
-	'suffix_words:',
+$options = getopt( '', array(
+	'after:',
+	'before:',
 	'context:',
 	'context_exclude:',
-	'limit_per_episode:',
-	'limit:',
 	'episode_dir:',
-	'transcript_dir:',
-	'min_duration:',
+	'extract',
 	'help',
+	'limit:',
+	'limit_per_episode:',
+	'match:',
+	'min_duration:',
+	'output_dir:',
+	'prefix_words:',
+	'podcast:',
+	'search:',
+	'suffix_words:',
+	'transcript_dir:',
 ) );
 
 $options = array_merge( $default_options, $options );

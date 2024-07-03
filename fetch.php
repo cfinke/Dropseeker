@@ -10,20 +10,20 @@ $default_options = default_options();
 $default_episode_dir = __DIR__ . '/episodes/';
 $default_transcript_dir = __DIR__ . '/transcripts/';
 
-$options = getopt( "", array(
-	"feed:",
-	"title:",
-	"help",
-	"match:",
-	"fetch_only",
-	"transcribe_only",
-	"confirm",
-	"episode_dir:",
-	"transcript_dir:",
-	"exclude:",
-	"before_date:",
-	"after_date:",
-	"whisper_cpp:", // Path to whisper.cpp
+$options = getopt( '', array(
+	'after_date:',
+	'before_date:',
+	'confirm',
+	'episode_dir:',
+	'exclude:',
+	'feed:',
+	'fetch_only',
+	'help',
+	'match:',
+	'title:',
+	'transcript_dir:',
+	'transcribe_only',
+	'whisper_cpp:', // Path to whisper.cpp
 ) );
 
 $options = array_merge( $default_options, $options );
