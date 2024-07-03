@@ -19,7 +19,7 @@ $options = getopt( '', array(
 	'feed:',
 	'fetch_only',
 	'help',
-	'match:',
+	'include:',
 	'title:',
 	'transcript_dir:',
 	'transcribe_only',
@@ -52,9 +52,9 @@ if ( isset( $options['after_date'] ) ) {
 	$options['after_date'] = date( "Y-m-d", strtotime( $options['after_date'] ) );
 }
 
-if ( isset( $options['match'] ) ) {
-	if ( ! is_array( $options['match'] ) ) {
-		$options['match'] = array( $options['match'] );
+if ( isset( $options['include'] ) ) {
+	if ( ! is_array( $options['include'] ) ) {
+		$options['include'] = array( $options['include'] );
 	}
 }
 
@@ -168,10 +168,10 @@ foreach ( $xml->channel->item as $item ) {
 		}
 	}
 
-	if ( isset( $options['match'] ) ) {
+	if ( isset( $options['include'] ) ) {
 		$matched = false;
 
-		foreach ( $options['match'] as $match_string ) {
+		foreach ( $options['include'] as $match_string ) {
 			$searchable_text = $date . " " . $item->title;
 
 			if ( false === stripos( $searchable_text, $match_string ) ) {
@@ -368,10 +368,10 @@ Optional arguments:
 	--before_date [YYYY-MM-DD] Only download/transcribe episodes published before this date.
 	--confirm                  Require confirmation before downloading or transcribing an episode.
 	--episode_dir [path]       The directory in which to store the episode directories.
-	--exclude [string]         Don't download episodes that match this string.
+	--exclude [string]         Don't download episodes that match this string. If multiple --exclude strings are supplied, it will exclude any episodes that match any of the supplied strings.
 	--fetch_only               Just download episodes; don't transcribe.
 	--help                     Show the usage instructions.
-	--match [string]           Only download/transcribe episodes that match this string. If multiple --match strings are supplied, it will include any episodes that match any of the supplied strings.
+	--include [string]         Only download/transcribe episodes that match this string.  If multiple --include strings are supplied, it will include any episodes that match any of the supplied strings.
 	--title [string]           The string that should be used for the folders containing the recordings and transcripts.
 	--transcript_dir [path]    The directory in which to store the transcript directories.
 	--transcribe_only          Just transcribe episodes; don't download any new ones.
