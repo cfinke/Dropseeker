@@ -72,21 +72,22 @@ Required:
 Optional:
 
 ```
---after [float]           Extract an additional __ seconds from after each match.
---before [float]          Extract an additional __ seconds from before each match.
---exclude [string]        A search string that, if it matches text around the search result, will be excluded from the final results.
---episode_dir [path]      The directory in which the episode directories are stored, if not in the default location.
---extract                 Extract audio clips of each match.
---help                    Show the usage instructions.
---context [string]        Only consider a match if the full prefix + match + suffix also includes this string.
---output_dir [path]       The directory in which to store the extracted audio clips.
---limit [int]             Stop searching entirely after finding this many total matches.
---limit_per_episode [int] Stop searching an episode after finding this many matches in it.
---match [string]          Only check episodes that include this string in their filename.
---podcast [string]        Only search transcripts from podcasts that include this string in their title.
---prefix_words [int]      Show this many words before the matching string in the text search results.
---suffix_words [int]      Show this many words after the matching string in the text search results.
---transcript_dir [path]   The directory in which the transcript directories are stored, if not in the default location.
+--after [float]            Extract an additional __ seconds from after each match.
+--before [float]           Extract an additional __ seconds from before each match.
+--episode_dir [path]       The directory in which the episode directories are stored, if not in the default location.
+--extract                  Extract audio clips of each match.
+--help                     Show the usage instructions.
+--context [string]         Only consider a match if the full prefix + match + suffix also includes this string.
+--context_exclude [string] A search string that, if it matches text around the search result, will be excluded from the final results.
+--output_dir [path]        The directory in which to store the extracted audio clips.
+--limit [int]              Stop searching entirely after finding this many total matches.
+--limit_per_episode [int]  Stop searching an episode after finding this many matches in it.
+--match [string]           Only check episodes that include this string in their filename.
+--min_duration [float]     If extracting audio, only extract a clip if it will be at least this long.
+--podcast [string]         Only search transcripts from podcasts that include this string in their title.
+--prefix_words [int]       Show this many words before the matching string in the text search results.
+--suffix_words [int]       Show this many words after the matching string in the text search results.
+--transcript_dir [path]    The directory in which the transcript directories are stored, if not in the default location.
 ```
 
 Default Options

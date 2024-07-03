@@ -18,14 +18,15 @@ $options = getopt( "", array(
 	"output_dir:",
 	"match:",
 	"extract",
-	'exclude:',
 	'prefix_words:',
 	'suffix_words:',
 	'context:',
+	'context_exclude:',
 	'limit_per_episode:',
 	'limit:',
 	'episode_dir:',
 	'transcript_dir:',
+	'min_duration:',
 	'help',
 ) );
 
@@ -106,15 +107,21 @@ if ( ! isset( $options['suffix_words'] ) ) {
 	$options['suffix_words'] = 15;
 }
 
-if ( isset( $options['exclude'] ) ) {
-	if ( ! is_array( $options['exclude'] ) ) {
-		$options['exclude'] = array( $options['exclude'] );
+if ( isset( $options['context_exclude'] ) ) {
+	if ( ! is_array( $options['context_exclude'] ) ) {
+		$options['context_exclude'] = array( $options['context_exclude'] );
 	}
 }
 
 if ( isset( $options['context'] ) ) {
 	if ( ! is_array( $options['context'] ) ) {
 		$options['context'] = array( $options['context'] );
+	}
+}
+
+if ( isset( $options['min_duration'] ) ) {
+	if ( is_array( $options['min_duration'] ) ) {
+		$options['min_duration'] = array_pop( $options['min_duration'] );
 	}
 }
 
@@ -278,8 +285,8 @@ foreach ( $transcripts as $transcript_file ) {
 
 				$exclusion_search_string = join( " ", $prefix_words ) . " " . trim( $suffix_string );
 
-				if ( ! empty( $options['exclude'] ) ) {
-					foreach ( $options['exclude'] as $exclude_option ) {
+				if ( ! empty( $options['context_exclude'] ) ) {
+					foreach ( $options['context_exclude'] as $exclude_option ) {
 						if ( false !== stripos( $exclusion_search_string, $exclude_option ) ) {
 							continue 2;
 						}
@@ -291,6 +298,47 @@ foreach ( $transcripts as $transcript_file ) {
 						if ( false === stripos( $exclusion_search_string, $context_includes ) ) {
 							continue 2;
 						}
+					}
+				}
+
+				$start_in_seconds = 0;
+				$start_parts = explode( ":", $start );
+
+				if ( count( $start_parts ) < 3 ) {
+					array_unshift( $start_parts, '0' );
+				}
+
+				if ( count( $start_parts ) < 3 ) {
+					array_unshift( $start_parts, '0' );
+				}
+
+				$timestamp_in_filename = '';
+
+				for ( $i = 0, $len = count( $start_parts ); $i < $len; $i++ ) {
+					$start_part = array_pop( $start_parts );
+					$start_in_seconds += $start_part * ( pow( 60, $i ) );
+
+					// Use a 01h2m3s timestamp in the filename to avoid using :, which shows up as / on Mac.
+					if ( $i == 0 ) {
+						$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "s";
+					} else if ( $i == 1 ) {
+						$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "m" . $timestamp_in_filename;
+					} else if ( $i == 2 ) {
+						$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "h" . $timestamp_in_filename;
+					}
+				}
+
+				$end_in_seconds = 0;
+				$end_parts = explode( ":", $end );
+				for ( $i = 0, $len = count( $end_parts ); $i < $len; $i++ ) {
+					$end_in_seconds += array_pop( $end_parts ) * ( pow( 60, $i ) );
+				}
+
+				if ( ! empty( $options['min_duration'] ) ) {
+					if ( $end_in_seconds - $start_in_seconds < $options['min_duration'] ) {
+						continue;
+					} else {
+						echo "Duration: " . ( $end_in_seconds - $start_in_seconds ) . " seconds\n";
 					}
 				}
 
@@ -307,38 +355,6 @@ foreach ( $transcripts as $transcript_file ) {
 						die( "Could not extract guid from " . $transcript_file . "\n" );
 					}
 
-					$timestamp_in_filename = '';
-
-					$start_in_seconds = 0;
-					$start_parts = explode( ":", $start );
-
-					if ( count( $start_parts ) < 3 ) {
-						array_unshift( $start_parts, '0' );
-					}
-
-					if ( count( $start_parts ) < 3 ) {
-						array_unshift( $start_parts, '0' );
-					}
-
-					for ( $i = 0, $len = count( $start_parts ); $i < $len; $i++ ) {
-						$start_part = array_pop( $start_parts );
-						$start_in_seconds += $start_part * ( pow( 60, $i ) );
-
-						// Use a 01h2m3s timestamp in the filename to avoid using :, which shows up as / on Mac.
-						if ( $i == 0 ) {
-							$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "s";
-						} else if ( $i == 1 ) {
-							$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "m" . $timestamp_in_filename;
-						} else if ( $i == 2 ) {
-							$timestamp_in_filename = str_pad( round( $start_part ), 2, '0', STR_PAD_LEFT ) . "h" . $timestamp_in_filename;
-						}
-					}
-
-					$end_in_seconds = 0;
-					$end_parts = explode( ":", $end );
-					for ( $i = 0, $len = count( $end_parts ); $i < $len; $i++ ) {
-						$end_in_seconds += array_pop( $end_parts ) * ( pow( 60, $i ) );
-					}
 
 					$audio_files = array();
 
@@ -438,25 +454,27 @@ function usage() {
 
 	echo "Required arguments:
 
-	--search [string]         What to search for in transcripts. Supports wildcards like 'foo*' (words that start
-	                          with foo), 'foo * bar' ('foo' and 'bar' separated by one word), or 'foo*baz*bar' (any
-	                          word starting with 'foo', containing 'baz', and ending with 'bar').
+	--search [string]          What to search for in transcripts. Supports wildcards like 'foo*' (words that start
+	                           with foo), 'foo * bar' ('foo' and 'bar' separated by one word), or 'foo*baz*bar' (any
+	                           word starting with 'foo', containing 'baz', and ending with 'bar').
 
 Optional arguments:
 
-	--after [float]           Extract an additional __ seconds from after each match.
-	--before [float]          Extract an additional __ seconds from before each match.
-	--exclude [string]        A search string that, if it matches text around the search result, will be excluded from the final results.
-	--episode_dir [path]      The directory in which the episode directories are stored, if not in the default location.
-	--extract                 Extract audio clips of each match.
-	--context [string]        Only consider a match if the full prefix + match + suffix also includes this string.
-	--output_dir [path]       The directory in which to store the extracted audio clips.
-	--limit [int]             Stop searching entirely after finding this many total matches.
-	--limit_per_episode [int] Stop searching an episode after finding this many matches in it.
-	--match [string]          Only check episodes that include this string in their filename.
-	--podcast [string]        Only search transcripts from podcasts that include this string in their title.
-	--prefix_words [int]      Show this many words before the matching string in the text search results.
-	--suffix_words [int]      Show this many words after the matching string in the text search results.
-	--transcript_dir [path]   The directory in which the transcript directories are stored, if not in the default location.
+	--after [float]            Extract an additional __ seconds from after each match.
+	--before [float]           Extract an additional __ seconds from before each match.
+	--episode_dir [path]       The directory in which the episode directories are stored, if not in the default location.
+	--extract                  Extract audio clips of each match.
+	--context [string]         Only consider a match if the full prefix + match + suffix also includes this string.
+	--context_exclude [string] A search string that, if it matches text around the search result, will be excluded from the final results.
+	--help                     Show the usage instructions.
+	--output_dir [path]        The directory in which to store the extracted audio clips.
+	--limit [int]              Stop searching entirely after finding this many total matches.
+	--limit_per_episode [int]  Stop searching an episode after finding this many matches in it.
+	--match [string]           Only check episodes that include this string in their filename.
+	--min_duration [float]     If extracting audio, only extract a clip if it will be at least this long.
+	--podcast [string]         Only search transcripts from podcasts that include this string in their title.
+	--prefix_words [int]       Show this many words before the matching string in the text search results.
+	--suffix_words [int]       Show this many words after the matching string in the text search results.
+	--transcript_dir [path]    The directory in which the transcript directories are stored, if not in the default location.
 ";
 }
