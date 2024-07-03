@@ -222,7 +222,7 @@ foreach ( $transcripts as $transcript_file ) {
 			foreach ( $words as $word ) {
 				$parsed_transcript[] = array(
 					$word,
-					preg_replace( '/[^a-z0-9]/', '', strtolower( $word ) ),
+					preg_replace( '/[^a-z0-9\#]/', '', strtolower( $word ) ),
 					$last_start_time,
 					$last_end_time,
 				);
@@ -409,7 +409,7 @@ function seconds_to_minutes( $seconds ) {
 }
 
 function matches_search_term( $word, $search_term ) {
-	$search_term = preg_replace( '/[^a-z0-9\*]/', '', strtolower( $search_term ) );
+	$search_term = preg_replace( '/[^a-z0-9\*\#]/', '', strtolower( $search_term ) );
 
 	if ( $word === $search_term ) {
 		return true;
