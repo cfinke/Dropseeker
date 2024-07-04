@@ -48,7 +48,7 @@ $options['search'] = array_unique( $options['search'] );
 $options['search'] = array_filter( $options['search'] );
 
 if ( empty( $options['podcast'] ) ) {
-	$options['podcast'] = '*';
+	$options['podcast'] = array();
 }
 
 if ( isset( $options['match'] ) ) {
@@ -164,18 +164,30 @@ if ( ! is_array( $options['podcast'] ) ) {
 	$options['podcast'] = array( $options['podcast'] );
 }
 
-$all_transcripts = array();
+$all_podcast_dirs = glob( $transcript_dir . "*" );
 
-foreach ( $options['podcast'] as $podcast ) {
-	$all_transcripts = array_merge( $all_transcripts, glob( $transcript_dir . "*" . $podcast . "*/*.vtt" ) );
+$matching_transcripts = array();
+
+foreach ( $all_podcast_dirs as $podcast_dir ) {
+	$podcast_title = substr( $podcast_dir, strlen( $transcript_dir ) );
+
+	if ( empty( $options['podcast'] ) ) {
+		$matching_transcripts = array_merge( $matching_transcripts, glob( $podcast_dir . "/*.vtt" ) );
+	} else {
+		foreach ( $options['podcast'] as $podcast_title_pattern ) {
+			if ( stripos( $podcast_title, $podcast_title_pattern ) !== false ) {
+				$matching_transcripts = array_merge( $matching_transcripts, glob( $podcast_dir . "/*.vtt" ) );
+			}
+		}
+	}
 }
 
-sort( $all_transcripts );
-$all_transcripts = array_reverse( $all_transcripts );
+sort( $matching_transcripts );
+$matching_transcripts = array_reverse( $matching_transcripts );
 
 $transcripts = array();
 
-foreach ( $all_transcripts as $transcript ) {
+foreach ( $matching_transcripts as $transcript ) {
 	$filename = basename( $transcript );
 
 	if ( isset( $options['match'] ) ) {
