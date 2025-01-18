@@ -48,7 +48,7 @@ $options['search'] = array_unique( $options['search'] );
 $options['search'] = array_filter( $options['search'] );
 
 if ( empty( $options['podcast'] ) ) {
-	$options['podcast'] = array();
+	$options['podcast'] = array( '' );
 }
 
 if ( isset( $options['match'] ) ) {
