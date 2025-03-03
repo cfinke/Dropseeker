@@ -26,6 +26,7 @@ $options = getopt( '', array(
 	'prefix_words:',
 	'podcast:',
 	'search:',
+	'skip_existing',
 	'suffix_words:',
 	'transcript_dir:',
 ) );
@@ -367,33 +368,42 @@ foreach ( $transcripts as $transcript_file ) {
 						die( "Could not extract guid from " . $transcript_file . "\n" );
 					}
 
-
 					$audio_files = array();
 
 					foreach ( $options['podcast'] as $podcast ) {
+						// @todo This breaks when the podcast parameter needs to be case-insensitive.
 						$audio_files = array_merge( $audio_files, glob( $episode_dir . "*" . $podcast . "*/*guid=" . $guid . "*.*" ) );
 					}
 
 					if ( empty( $audio_files ) ) {
-						die( "Could not find audio for " . $transcript_file . "\n" );
+						die( "Could not find audio for " . $transcript_file . " (looked for " . join( ", ", $audio_files ) . "\n" );
 					}
 
 					$audio_file = $audio_files[0];
 
-					shell_exec(
-						"ffmpeg -hide_banner -loglevel error -y -ss "
-							. escapeshellarg( floatval( $start_in_seconds - $options['before'] ) )
-							. " -t "
-							. ( $end_in_seconds - $start_in_seconds + $options['before'] + $options['after'] )
-							. " -i " . escapeshellarg( $audio_file )
-							. " "
-							. escapeshellarg(
-								rtrim( $options['output_dir'], '/' )
+					$destination_file = rtrim( $options['output_dir'], '/' )
 								. '/' . substr( $search_term
 								. " - " . basename( $audio_file ), 0, 200 )
-								. " - " . $timestamp_in_filename . ".aif"
-							)
-					);
+								. " - " . $timestamp_in_filename . ".aif";
+
+					if ( isset( $options['skip_existing'] ) && file_exists( $destination_file ) ) {
+						// @noop
+					} else {
+						shell_exec(
+							"ffmpeg -hide_banner -loglevel error -y -ss "
+								. escapeshellarg( floatval( $start_in_seconds - $options['before'] ) )
+								. " -t "
+								. ( $end_in_seconds - $start_in_seconds + $options['before'] + $options['after'] )
+								. " -i " . escapeshellarg( $audio_file )
+								. " "
+								. escapeshellarg(
+									rtrim( $options['output_dir'], '/' )
+									. '/' . substr( $search_term
+									. " - " . basename( $audio_file ), 0, 200 )
+									. " - " . $timestamp_in_filename . ".aif"
+								)
+						);
+					}
 				}
 
 				if ( isset( $options['limit'] ) && $matches_found == $options['limit'] ) {
