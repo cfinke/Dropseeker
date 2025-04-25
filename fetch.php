@@ -189,8 +189,8 @@ foreach ( $xml->channel->item as $item ) {
 
 	if ( ! empty( $options['exclude'] ) ) {
 		foreach ( $options['exclude'] as $exclude_option ) {
-			if ( false !== stripos( $item->pubDate . " " . $item->title, $exclude_option ) ) {
-				echo "Skipping " . $item->pubDate . " " . $item->title . "\n";
+			if ( false !== stripos( $item->pubDate . " " . $item->title . " (guid=" . $guid . ")", $exclude_option ) ) {
+				echo "Skipping " . $item->pubDate . " " . $item->title . " (guid=" . $guid . ")\n";
 				continue 2;
 			}
 		}
