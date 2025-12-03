@@ -418,18 +418,6 @@ foreach ( $transcripts as $transcript_file ) {
 	}
 }
 
-function seconds_to_minutes( $seconds ) {
-	$string = floor( $seconds / ( 60 * 60 ) );
-	$seconds = intval( $seconds ) % ( 60 * 60 );
-
-	$string .= ':' . str_pad( floor( $seconds / 60 ), 2, "0", STR_PAD_LEFT );
-	$seconds = $seconds % 60;
-
-	$string .= ':' . str_pad( $seconds, 2, "0", STR_PAD_LEFT );
-
-	return $string;
-}
-
 function matches_search_term( $word, $search_term ) {
 	$search_term = preg_replace( '/[^a-z0-9\*\#]/', '', strtolower( $search_term ) );
 
